@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ww.demo.dao.EmpDao">
+
+    <resultMap id="BaseResultMap" type="com.ww.demo.dto.EmployeeDTO">
+        <id column="emp_num"       property="empNum"       jdbcType="BIGINT"></id>
+        <id column="dept_num"      property="deptNum"      jdbcType="VARCHAR"></id>
+        <id column="emp_name"      property="empName"      jdbcType="VARCHAR"></id>
+        <id column="job_num"       property="jobNum"       jdbcType="VARCHAR"></id>
+        <id column="id_card"       property="idCard"       jdbcType="VARCHAR"></id>
+        <id column="phone_num"     property="phoneNum"     jdbcType="VARCHAR"></id>
+        <id column="email"         property="email"        jdbcType="VARCHAR"></id>
+        <id column="password"      property="password"     jdbcType="VARCHAR"></id>
+        <id column="deptName"      property="deptName"     jdbcType="VARCHAR"></id>
+        <id column="empNumStr"      property="empNumStr"     jdbcType="VARCHAR"></id>
+    </resultMap>
+    
+    <sql id="baseSql">
+        emp_num,dept_num,emp_name,job_num,id_card,phone_num,email,password
+    </sql>
+
+    <select id="list" resultMap="BaseResultMap" parameterType="com.ww.demo.dto.EmployeeDTO">
+        select
+         <include refid="baseSql"/>,emp_num as empNumStr,
+         (select dept_name from department d where d.dept_num = e.dept_num) deptName
+         from employee e where 1=1
+        <if test=" deptNum!=null and deptNum !='' ">
+            AND e.dept_num=#{deptNum}
+        </if>
+        order by e.emp_num desc limit #{rows,jdbcType=INTEGER},#{limit,jdbcType=INTEGER}
+    </select>
+
+    <select id="count" resultType="Long" parameterType="com.ww.demo.dto.EmployeeDTO">
+        select count(0)
+        from employee e where 1=1
+        <if test=" deptNum!=null and deptNum !='' ">
+            AND e.dept_num=#{deptNum}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.ww.demo.dto.EmployeeDTO">
+        insert into employee(`dept_num`,`emp_name`,`job_num`,`id_card`,`phone_num`,`email`,`password`)
+            VALUES(#{deptNum},#{empName},#{jobNum},#{idCard},#{phoneNum},#{email},#{password})
+    </insert>
+
+    <select id="checkName" parameterType="string" resultType="long">
+        select count(0) from employee where emp_name = #{deptName}
+    </select>
+
+    <select id="checkPhoneNum" parameterType="string" resultType="long">
+        select count(0) from employee where phone_num = #{phoneNum}
+    </select>
+
+    <select id="checkIdCard" parameterType="string" resultType="long">
+        select count(0) from employee where id_card = #{idCard}
+    </select>
+
+    <delete id="delete" parameterType="long" >
+        delete from employee where emp_num=#{empNum}
+    </delete>
+
+    <select id="info" parameterType="long" resultMap="BaseResultMap">
+        select
+        <include refid="baseSql"/>,emp_num as empNumStr
+        from employee where emp_num=#{empNum}
+    </select>
+
+    <update id="update" parameterType="com.ww.demo.dto.EmployeeDTO" >
+        update employee
+        <set>
+            <if test="deptNum != null and deptNum != '' ">dept_num=#{deptNum},</if>
+            <if test="empName != null and empName != '' ">emp_name=#{empName},</if>
+            <if test="jobNum != null and jobNum != '' ">job_num=#{jobNum},</if>
+            <if test="idCard != null and idCard != '' ">id_card=#{idCard},</if>
+            <if test="phoneNum != null and phoneNum != '' ">phone_num=#{phoneNum},</if>
+            <if test="email != null and email != '' ">email=#{email},</if>
+            <if test="password != null and password != ''  ">password=#{password}</if>
+        </set>
+        where emp_num=#{empNum}
+    </update>
+
+</mapper>

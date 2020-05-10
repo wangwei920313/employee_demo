@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+
+
+<!-- Mirrored from www.zi-han.net/theme/hplus/table_data_tables.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 20 Jan 2016 14:20:01 GMT -->
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>员工列表</title>
+    <meta name="keywords" content="员工管理系统">
+    <meta name="description" content="员工管理系统">
+
+    <link rel="shortcut icon" href="favicon.ico"> <link href="/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+
+    <!-- Data Tables -->
+    <link href="/css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+
+    <link href="/css/animate.min.css" rel="stylesheet">
+    <link href="/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+    <link href="/css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>员工 <small>管理</small></h5>
+                    </div>
+
+                    <div class="ibox-content">
+                        <form role="form" class="form-inline" style="margin-bottom: 20px">
+                            <div class="form-group" style="margin-top: 10px">
+                                <span class="form-control m-b" style="border: none">所属部门</span>
+                                <select class="form-control m-b" id="deptSearch">
+                                    <option value="">全部</option>
+                                    <option th:selected="${deptNum  eq dept.deptNum}" value="1" th:each="dept : ${depts}" th:value="${dept.deptNum}" th:text="${dept.deptName}">平面设计</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="searchByDeptNum();" style="margin-left: 20px">查询</button>
+                            <button type="button" class="btn btn-primary" onclick="showSaveModel();" style="margin-left: 20px">添加</button>
+                        </form>
+                        <table class="table table-striped table-bordered table-hover dataTables-example" >
+                            <thead>
+                                <tr>
+                                    <th style="text-align: center">员工编号</th>
+                                    <th style="text-align: center">员工名称</th>
+                                    <th style="text-align: center">所在部门</th>
+                                    <th style="text-align: center">员工工号</th>
+                                    <th style="text-align: center">证件号码</th>
+                                    <th style="text-align: center">电话</th>
+                                    <th style="text-align: center">邮箱</th>
+                                    <th style="text-align: center">密码</th>
+                                    <th style="text-align: center">操作</th>
+                                </tr>
+                            </thead>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增弹窗 -->
+    <div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content animated bounceInRight">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" onclick="closeModel();"><span aria-hidden="true">&times;</span><span class="sr-only">关闭</span>
+                    </button>
+                    <h4 class="modal-title">新增员工</h4>
+                </div>
+
+                <!-- 表单开始 -->
+                <div class="ibox-content">
+                <form method="get" class="form-horizontal" id="saveForm">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">员工姓名</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" onblur="check('1',this,'checkName')" onfocus="hideInfo('checkName');" name="empName">
+                            <span class="help-block m-b-none" style="color:red;display:none" id="checkName" >姓名重复</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">所属部门</label>
+                        <div class="col-sm-8">
+                            <select class="form-control m-b" name="deptNum" id="dept">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">人员工号</label>
+
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" name="jobNum" >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">证件号码</label>
+
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" name="idCard" onblur="check('2',this,'checkIdCard')"  onfocus="hideInfo('checkIdCard');">
+                            <span class="help-block m-b-none" style="color:red;display:none" id="checkIdCard" >证件号码重复</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">手机号码</label>
+
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" name="phoneNum" onblur="check('3',this,'checkPhoneNum')"  onfocus="hideInfo('checkPhoneNum');">
+                            <span class="help-block m-b-none" style="color:red;display:none" id="checkPhoneNum" >手机号码重复</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">电子邮箱</label>
+
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" name="email">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">登录密码</label>
+
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" name="password">
+                        </div>
+                    </div>
+
+                </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" onclick="closeModel();">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEmp();" id="saveBtn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑弹窗 -->
+    <div class="modal inmodal" id="myModalUpdate" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content animated bounceInRight">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" onclick="closeModel();"><span aria-hidden="true">&times;</span><span class="sr-only">关闭</span>
+                    </button>
+                    <h4 class="modal-title">编辑员工</h4>
+                </div>
+
+                <!-- 表单开始 -->
+                <div class="ibox-content">
+                    <form method="get" class="form-horizontal" id="updateForm">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">员工姓名</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" onblur="checkUpdate('1',this,'checkNameUpdate','empNameOld')" onfocus="hideInfo('checkNameUpdate');" name="empName" id="empNameUpdate">
+                                <input type="hidden" id="empNameOld" />
+                                <input type="hidden" name="empNum" id="empNumUpdate" />
+                                <span class="help-block m-b-none" style="color:red;display:none" id="checkNameUpdate" >姓名重复</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">员工编号</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control"  id="empNumUpdateStr" disabled>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">所属部门</label>
+                            <div class="col-sm-8">
+                                <select class="form-control m-b" name="deptNum" id="deptUpdate">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">人员工号</label>
+
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="jobNum" id="jobNumUpdate">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">证件号码</label>
+
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="idCard" onblur="checkUpdate('2',this,'checkIdCardUpdate','idCardOld')"  onfocus="hideInfo('checkIdCardUpdate');" id="idCardUpdate">
+                                <input type="hidden" id="idCardOld" />
+                                <span class="help-block m-b-none" style="color:red;display:none" id="checkIdCardUpdate" >证件号码重复</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">手机号码</label>
+
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="phoneNum" onblur="checkUpdate('3',this,'checkPhoneNumUpdate','phoneNumOld')"  onfocus="hideInfo('checkPhoneNumUpdate');" id="phoneNumUpdate">
+                                <input type="hidden" id="phoneNumOld" />
+                                <span class="help-block m-b-none" style="color:red;display:none" id="checkPhoneNumUpdate" >手机号码重复</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">电子邮箱</label>
+
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="email" id="emailUpdate">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">登录密码</label>
+
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="password" id="passwordUpdate">
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" onclick="closeModel();">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="updateEmp();" id="updateBtn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/jquery.min.js?v=2.1.4"></script>
+    <script src="/js/bootstrap.min.js?v=3.3.6"></script>
+    <script src="/js/plugins/jeditable/jquery.jeditable.js"></script>
+    <script src="/js/plugins/dataTables/jquery.dataTables.js"></script>
+    <script src="/js/plugins/dataTables/dataTables.bootstrap.js"></script>
+    <script src="/js/content.min.js?v=1.0.0"></script>
+    <script src="/js/plugins/sweetalert/sweetalert.min.js"></script>
+    <script>
+        var tables;
+        $(function () {
+            //添加、修改异步提交地址
+            var url = "";
+
+            tables = $(".dataTables-example").dataTable({
+                serverSide: true,//分页，取数据等等的都放到服务端去
+                processing: true,//载入数据的时候是否显示“载入中”
+                pageLength: 10,  //首次加载的数据条数
+                ordering: false, //排序操作在服务端进行，所以可以关了。
+                pagingType: "full_numbers",
+                autoWidth: false,
+                stateSave: true,//保持翻页状态，和comTable.fnDraw(false);结合使用
+                searching: false,//禁用datatables搜索
+                ajax: {
+                    type: "get",
+                    url: "list",
+                    dataSrc: "data",
+                    data: function (d) {
+                        console.log(d);
+                        var param = {};
+                        param.draw = d.draw;//请求次数
+                        param.rows = d.start;//已查询数据总数
+                        param.limit = d.length;//每页数量
+                        param.deptNum = $("#deptSearch").val();
+                        var formData = $("#queryForm").serializeArray();//把form里面的数据序列化成数组
+                        formData.forEach(function (e) {
+                            param[e.name] = e.value;
+                        });
+                        return param;//自定义需要传递的参数。
+                    },
+                },
+                createdRow: function( row, data, dataIndex ) {
+                    $(row).children('td').attr('style', 'text-align: center;vertical-align: middle;');//设置居中
+                },
+                columns: [//对应上面thead里面的序列
+                    {"data": 'empNumStr',"width":"100px"},
+                    {"data": 'empName' },
+                    {"data": 'deptName'},
+                    {"data": 'jobNum'},
+                    {"data": 'idCard'},
+                    {"data": 'phoneNum'},
+                    {"data": 'email'},
+                    {"data": 'password'},
+                    {"data": null,"width":"200px"}
+                ],
+                //操作按钮
+                columnDefs: [
+                    {
+                        //增加按钮
+                        "targets": -1,
+                        "render": function(data, type, row, meta) {
+                            return "<button type=\"button\" onclick=\"delEmp('"+row.empNum+"\')\" value=\"删除\" >删除</button><button type=\"button\" onclick=\"showUpdateModel('"+row.empNum+"\')\"  >编辑</button>"
+                        }
+                    }
+
+                ],
+                language: {
+                    lengthMenu: "",
+                    processing: "<sp:message code='sys.load'/>",
+                    paginate: {
+                        previous: "<",
+                        next: ">",
+                        first: "<<",
+                        last: ">>"
+                    },
+                    zeroRecords: "<sp:message code='sys.nodata'/>",
+                    info: "<sp:message code='sys.pages'/>",
+                    infoEmpty: "",
+                    infoFiltered: "",
+                    sSearch: "<sp:message code='sys.keyword'/>：",
+                },
+                //在每次table被draw完后回调函数
+                fnDrawCallback: function(){
+                    var api = this.api();
+                    //获取到本页开始的条数
+                    var startIndex= api.context[0]._iDisplayStart;
+                    // api.column(1).nodes().each(function(cell, i) {
+                    //     cell.innerHTML = startIndex + i + 1;
+                    // });
+                }
+            });
+
+        });
+
+        /**
+         * 打开新增弹窗 为保证部门下拉框准确性 每次打开都请求数据
+         */
+        function showSaveModel(){
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: "../dept/all",
+                async: true,
+                error: function(request) {
+                    showFail("Server Connection Error...");
+                },
+                success: function(data) {
+                    console.log(data);
+                    $("#dept").empty();
+                    var options = "";
+                    for(var i in data){
+                        options += "<option value='"+data[i].deptNum+"'>"+data[i].deptName+"</option>";
+                    }
+                    $("#dept").append(options);
+
+                }
+            });
+            $("#myModal").show();
+        }
+
+        /**
+         * 打开编辑弹窗  为保证数据准确 每次打开都重新请求部门列表 并选中当前部门
+         * @param empNum
+         */
+        function showUpdateModel(empNum){
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: "get",
+                data: {"empNum":empNum},
+                async: true,
+                error: function(request) {
+                    showFail("Server Connection Error...");
+                },
+                success: function(data) {
+                    console.log(data);
+                    $("#deptUpdate").empty();
+                    var options = "";
+                    for(var i in data.depts){
+                        options += "<option value='"+data.depts[i].deptNum+"'>"+data.depts[i].deptName+"</option>";
+                    }
+                    $("#deptUpdate").append(options);
+                    $("#deptUpdate").val(data.deptNum);
+
+                    //赋值
+                    $("#empNumUpdate").val(data.empNum);
+                    $("#empNumUpdateStr").val(data.empNumStr);
+                    $("#empNameUpdate").val(data.empName);
+                    $("#empNameOld").val(data.empName);
+                    $("#jobNumUpdate").val(data.jobNum);
+                    $("#idCardUpdate").val(data.idCard);
+                    $("#idCardOld").val(data.idCard);
+                    $("#phoneNumUpdate").val(data.phoneNum);
+                    $("#phoneNumOld").val(data.phoneNum);
+                    $("#emailUpdate").val(data.email);
+                    $("#passwordUpdate").val(data.password);
+
+
+                }
+            });
+            $("#myModalUpdate").show();
+        }
+
+        /**
+         * 关闭弹窗
+         */
+        function closeModel(){
+            $("#myModal").hide();
+            $("#myModalUpdate").hide();
+        }
+
+        /**
+         * 查重
+         * @param type
+         * @param that
+         * @param id
+         */
+        function check(type,that,id){
+            var name=$(that).val();
+            if(type=="1"){
+                var result = match(name);
+                if(result == false){
+                    $("#"+id).text("姓名禁止出现特殊字符");
+                    $("#"+id).css("display","block");
+                }
+            }
+            var obj = new Object() ;
+            obj["checkType"]=type;
+            obj[$(that).attr("name")]=name;
+            console.log(obj);
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: "check",
+                data: obj,
+                async: true,
+                error: function(request) {
+                    showFail("Server Connection Error...");
+                },
+                success: function(data) {
+                    if(data==false){
+                        if(type=="1"){
+                            $("#"+id).text("姓名重复");
+                        }
+                        $("#"+id).css("display","block");
+                    }
+                }
+            });
+        }
+
+        /**
+         * 编辑窗口查重  若数值未改变  不请求后台检查
+         * @param type
+         * @param that
+         * @param id
+         * @param oldId
+         */
+        function checkUpdate(type,that,id,oldId){
+            var name=$(that).val();
+            if(type=="1"){
+                var result = match(name);
+                if(result == false){
+                    $("#"+id).text("姓名禁止出现特殊字符");
+                    $("#"+id).css("display","block");
+                }
+            }
+            if($("#"+oldId).val()==name){
+                console.log("放过你")
+                return;
+            }
+            var obj = new Object() ;
+            obj["checkType"]=type;
+            obj[$(that).attr("name")]=name;
+            console.log(obj);
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: "check",
+                data: obj,
+                async: true,
+                error: function(request) {
+                    showFail("Server Connection Error...");
+                },
+                success: function(data) {
+                    if(data==false){
+                        if(type=="1"){
+                            $("#"+id).text("姓名重复");
+                        }
+                        $("#"+id).css("display","block");
+                    }
+                }
+            });
+        }
+
+        /**
+         * 隐藏提示语
+         * @param id
+         */
+        function hideInfo(id){
+            $("#"+id).css("display","none");
+        }
+
+        /**
+         * 正则比较特殊字符
+         * @param s
+         * @returns {boolean}
+         */
+        function match(s) {
+            return /^[\da-z\u4E00-\u9FA5\uF900-\uFA2D]+$/gi.test(s);
+        }
+
+        /**
+         * 编辑员工
+         */
+        function updateEmp(){
+            $("#updateBtn").attr("disabled",true);
+            var param = new Object();
+            var a = $("#updateForm").serializeArray();
+            $.each(a, function() {
+                if (param[this.name] !== undefined) {
+                    if (!param[this.name].push) {
+                        param[this.name] = [ param[this.name] ];
+                    }
+                    param[this.name].push(this.value || '');
+                } else {
+                    param[this.name] = this.value || '';
+                }
+            });
+            console.log(param);
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: "update",
+                data: param,
+                async: true,
+                error: function(request) {
+                    $("#updateBtn").attr("disabled",false);
+                    showFail("Server Connection Error...");
+                },
+                success: function(data) {
+                    console.log(data);
+                    swal({title:"成功！",text:"员工《"+param.empName+"》更新成功",type:"success"})
+                    $('button, .confirm').click(function () {
+                        window.location.reload();
+                    })
+                }
+            });
+        }
+
+        /**
+         * 新增
+         */
+        function saveEmp(){
+            $("#saveBtn").attr("disabled",true);
+            var param = new Object();
+            var a = $("#saveForm").serializeArray();
+            $.each(a, function() {
+                if (param[this.name] !== undefined) {
+                    if (!param[this.name].push) {
+                        param[this.name] = [ param[this.name] ];
+                    }
+                    param[this.name].push(this.value || '');
+                } else {
+                    param[this.name] = this.value || '';
+                }
+            });
+            console.log(param);
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: "save",
+                data: param,
+                async: true,
+                error: function(request) {
+                    $("#saveBtn").attr("disabled",false);
+                    showFail("Server Connection Error...");
+                },
+                success: function(data) {
+                    console.log(data);
+                    swal({title:"成功！",text:"员工《"+param.empName+"》保存成功",type:"success"})
+                    $('button, .confirm').click(function () {
+                        window.location.reload();
+                    })
+                }
+            });
+        }
+
+        /**
+         * 删除 物理删除
+         * @param empNum
+         */
+        function delEmp(empNum){
+                swal({title:"您确定要删除这条信息吗",
+                    text:"删除后将无法恢复，请谨慎操作！",
+                    type:"warning",
+                    showCancelButton:true,
+                    confirmButtonColor:"#DD6B55",
+                    confirmButtonText:"是的，我要删除！",
+                    cancelButtonText:"让我再考虑一下…",
+                    closeOnConfirm:false,
+                    closeOnCancel:false},
+                    function(isConfirm){
+                        if(isConfirm){
+                            $.ajax({
+                                cache: false,
+                                type: "GET",
+                                url: "delete",
+                                data: {"empNum":empNum},
+                                async: true,
+                                error: function(request) {
+                                    showFail("Server Connection Error...");
+                                },
+                                success: function(data) {
+                                    if(data==true){
+                                        swal("删除成功！","您已经永久删除了这条信息。","success")
+                                        $('button, .confirm').click(function () {
+                                            window.location.reload();
+                                        })
+                                    }else{
+                                        swal("错误","删除失败！","error")
+                                    }
+                                }
+                            });
+                        }else{
+                            swal("已取消","您取消了删除操作！","error")
+                        }
+                })
+        }
+
+        /**
+         * 上方查询
+         */
+        function searchByDeptNum(){
+            var deptNum = $("#deptSearch").val();
+            window.location.href="info?deptNum="+deptNum;
+        }
+
+    </script>
+
+</body>
+
+
+<!-- Mirrored from www.zi-han.net/theme/hplus/table_data_tables.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 20 Jan 2016 14:20:02 GMT -->
+</html>
